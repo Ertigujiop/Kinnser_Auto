@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinnser AutoFill - Gestión</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 650px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .header {
+      background: #111;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .tabs {
+      display: flex;
+      background: white;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      background: white;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      transition: all 0.3s;
+    }
+
+    .tab:hover {
+      background: #f5f5f5;
+    }
+
+    .tab.active {
+      color: #111;
+      border-bottom: 3px solid #111;
+      background: white;
+    }
+
+    .content {
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-top: 3px solid #111;
+    }
+
+    .stat-card-total {
+      border-top-color: #555;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 5px;
+    }
+
+    .stat-card-total .stat-number {
+      color: #555;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .btn-add {
+      background: #111;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+      flex: 1;
+    }
+
+    .btn-add:hover {
+      background: #333;
+    }
+
+    .btn-add-category {
+      background: #555;
+    }
+
+    .btn-add-category:hover {
+      background: #333;
+    }
+
+    .category-section {
+      margin-bottom: 25px;
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid #111;
+    }
+
+    .category-title {
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 12px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .category-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .text-item,
+    .template-item {
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .text-item-title,
+    .template-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+      font-size: 13px;
+      padding-right: 70px;
+    }
+
+    .text-item-content,
+    .template-preview {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .text-item-actions,
+    .template-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+    }
+
+    .btn-icon {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: #f0f0f0;
+      border-color: #111;
+      transform: scale(1.1);
+    }
+
+    .btn-edit-category:hover {
+      border-color: #333;
+    }
+
+    .btn-delete-category:hover,
+    .btn-delete-template:hover {
+      border-color: #000;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 25px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #111;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-input:disabled {
+      background: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .form-hint {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #111;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #333;
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .help-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .help-item {
+      margin-bottom: 15px;
+    }
+
+    .help-item h3 {
+      font-size: 14px;
+      color: #111;
+      margin-bottom: 6px;
+    }
+
+    .help-item p {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .vital-fields {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .vital-group {
+      margin-bottom: 15px;
+    }
+
+    .vital-group-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .backup-section {
+      border-top: 1px solid #e0e0e0;
+      padding: 12px 20px;
+      background: #f9f9f9;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .backup-label {
+      font-size: 12px;
+      color: #555;
+      font-weight: 600;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .btn-backup {
+      background: white;
+      color: #111;
+      border: 1.5px solid #333;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-backup:hover {
+      background: #111;
+      color: white;
+    }
+
+    .btn-backup-import {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-backup-import input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .import-status {
+      font-size: 11px;
+      color: #555;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>Kinnser AutoFill</h1>
+    <p>Gestiona tus textos y plantillas de autocompletado</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="manage">Textos</button>
+    <button class="tab" data-tab="templates">Signos Vitales</button>
+    <button class="tab" data-tab="help">Ayuda</button>
+  </div>
+
+  <div class="content">
+    <!-- Tab: Gestionar Textos -->
+    <div id="tab-manage" class="tab-content">
+      <div id="stats-container" class="stats-container"></div>
+
+      <div class="action-buttons">
+        <button class="btn-add" id="btn-add-new">
+          <span>+</span>
+          <span>Agregar Texto</span>
+        </button>
+        <button class="btn-add btn-add-category" id="btn-add-category">
+          <span>+</span>
+          <span>Nueva Categoría</span>
+        </button>
+      </div>
+
+      <div id="texts-container"></div>
+    </div>
+
+    <!-- Tab: Plantillas de Signos Vitales -->
+    <div id="tab-templates" class="tab-content" style="display: none;">
+      <button class="btn-add" id="btn-add-template" style="margin-bottom: 20px;">
+        <span>+</span>
+        <span>Nueva Plantilla de Signos Vitales</span>
+      </button>
+
+      <div id="templates-container"></div>
+    </div>
+
+    <!-- Tab: Ayuda -->
+    <div id="tab-help" class="tab-content" style="display: none;">
+      <div class="help-section">
+        <div class="help-item">
+          <h3>Cómo usar la extensión</h3>
+          <p>1. Haz <strong>doble click</strong> en cualquier campo de texto en Kinnser<br>
+            2. Aparecerá un menú con tus textos guardados<br>
+            3. Selecciona el texto que deseas insertar</p>
+        </div>
+
+        <div class="help-item">
+          <h3>Signos Vitales (NUEVO)</h3>
+          <p>Crea plantillas con valores de signos vitales para autocompletar formularios completos con un solo click.
+            Ideal para pacientes estables con valores similares.</p>
+        </div>
+
+        <div class="help-item">
+          <h3>Gestionar categorías</h3>
+          <p>Crea categorías personalizadas para organizar tus textos. Cada categoría puede tener su propio color
+            distintivo.</p>
+        </div>
+
+        <div class="help-item">
+          <h3>Atajos de teclado</h3>
+          <p><strong>ESC</strong> - Cerrar el menú de autocompletado<br>
+            <strong>Doble click</strong> - Abrir menú en cualquier campo de texto
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para agregar/editar texto -->
+  <div class="modal" id="modal-edit">
+    <div class="modal-content">
+      <div class="modal-header" id="modal-title">Agregar Nuevo Texto</div>
+
+      <form id="form-text">
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <select class="form-select" id="input-category" required>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Título</label>
+          <input type="text" class="form-input" id="input-title" placeholder="Ej: Evaluación Inicial" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Texto</label>
+          <textarea class="form-input form-textarea" id="input-text" placeholder="Escribe el texto que se insertará..."
+            required></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para agregar/editar categoría -->
+  <div class="modal" id="modal-category">
+    <div class="modal-content">
+      <div class="modal-header" id="modal-category-title">Agregar Nueva Categoría</div>
+
+      <form id="form-category">
+        <div class="form-group">
+          <label class="form-label">Clave interna</label>
+          <input type="text" class="form-input" id="category-key-input" placeholder="Se genera automáticamente"
+            readonly>
+          <div class="form-hint">Esta clave se usa internamente para identificar la categoría</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nombre de la categoría</label>
+          <input type="text" class="form-input" id="category-label-input" placeholder="Ej: Notas de Enfermería"
+            required>
+        </div>
+
+        <div class="form-group" style="display:none;">
+          <input type="hidden" id="category-color-input" value="#111">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-category">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Categoría</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para agregar/editar plantilla de signos vitales -->
+  <div class="modal" id="modal-template">
+    <div class="modal-content">
+      <div class="modal-header" id="modal-template-title">Agregar Plantilla de Signos Vitales</div>
+
+      <form id="form-template">
+        <div class="form-group">
+          <label class="form-label">Nombre de la plantilla</label>
+          <input type="text" class="form-input" id="template-name-input" placeholder="Ej: Signos Vitales Normales"
+            required>
+        </div>
+
+        <div class="vital-fields">
+          <div class="vital-group">
+            <div class="vital-group-title">Temperatura</div>
+            <input type="text" class="form-input" id="template-temp" placeholder="98.6">
+          </div>
+
+          <div class="vital-group">
+            <div class="vital-group-title">Presión Arterial (BP)</div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Prior (1/2)</label>
+                <div class="form-row">
+                  <input type="text" class="form-input" id="template-bp-prior-1" placeholder="120">
+                  <input type="text" class="form-input" id="template-bp-prior-2" placeholder="80">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Post (1/2)</label>
+                <div class="form-row">
+                  <input type="text" class="form-input" id="template-bp-post-1" placeholder="120">
+                  <input type="text" class="form-input" id="template-bp-post-2" placeholder="80">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="vital-group">
+            <div class="vital-group-title">Frecuencia Cardíaca (Heart Rate)</div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Prior</label>
+                <input type="text" class="form-input" id="template-hr-prior" placeholder="72">
+              </div>
+              <div>
+                <label class="form-label">Post</label>
+                <input type="text" class="form-input" id="template-hr-post" placeholder="72">
+              </div>
+            </div>
+          </div>
+
+          <div class="vital-group">
+            <div class="vital-group-title">Respiraciones (Respirations)</div>
+            <div class="form-row">
+              <div>
+                <label class="form-label">Prior</label>
+                <input type="text" class="form-input" id="template-resp-prior" placeholder="16">
+              </div>
+              <div>
+                <label class="form-label">Post</label>
+                <input type="text" class="form-input" id="template-resp-post" placeholder="16">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-template">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Plantilla</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Barra de Backup -->
+  <div class="backup-section">
+    <span class="backup-label">Backup:</span>
+    <button class="btn-backup" id="btn-export">Exportar JSON</button>
+    <label class="btn-backup btn-backup-import">
+      Importar JSON
+      <input type="file" id="input-import" accept=".json">
+    </label>
+    <span class="import-status" id="import-status"></span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

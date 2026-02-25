@@ -1,0 +1,293 @@
+/* styles.css - Estilos para el menú de autocompletado y signos vitales */
+
+/* Menú de autocompletado de textos */
+.kinnser-autofill-dropdown {
+  position: absolute;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999999;
+  width: 400px;
+  max-height: 500px;
+  display: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+.kinnser-autofill-header {
+  padding: 12px;
+  background: #111;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.kinnser-search {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+}
+
+.kinnser-search:focus {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.kinnser-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.kinnser-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.kinnser-autofill-content {
+  max-height: 440px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.kinnser-category {
+  margin-bottom: 12px;
+}
+
+.kinnser-category-header {
+  font-weight: 600;
+  color: #111;
+  padding: 8px 12px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+.kinnser-item {
+  padding: 10px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.kinnser-item:hover {
+  background: #f0f0f0;
+  border-color: #333;
+  transform: translateX(4px);
+}
+
+.kinnser-item-title {
+  font-weight: 600;
+  color: #111;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.kinnser-item-preview {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.kinnser-no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-size: 14px;
+}
+
+/* Menú de signos vitales */
+.kinnser-vitals-dropdown {
+  position: absolute;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999999;
+  width: 400px;
+  max-height: 400px;
+  display: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+.kinnser-vitals-header {
+  padding: 12px;
+  background: #111;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.kinnser-vitals-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.kinnser-vitals-content {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.kinnser-vitals-item {
+  padding: 12px;
+  margin: 6px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.kinnser-vitals-item:hover {
+  background: #f0f0f0;
+  border-color: #333;
+  transform: translateX(4px);
+}
+
+.kinnser-vitals-item-name {
+  font-weight: 600;
+  color: #111;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.kinnser-vitals-item-preview {
+  font-size: 11px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.kinnser-vitals-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: #888;
+  font-size: 13px;
+}
+
+.kinnser-vitals-empty p {
+  margin-bottom: 8px;
+}
+
+/* Contenedor de botones flotantes */
+.kinnser-floating-container {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999998;
+  align-items: center;
+}
+
+/* Botones circulares flotantes */
+.kinnser-vitals-floating-btn,
+.kinnser-p-floating-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #111;
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.kinnser-vitals-floating-btn:hover,
+.kinnser-p-floating-btn:hover {
+  transform: scale(1.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  background: #2a2a2a;
+}
+
+.kinnser-vitals-floating-btn:active,
+.kinnser-p-floating-btn:active {
+  transform: scale(0.94);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Letra P del segundo botón */
+.kinnser-p-floating-btn {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Notificación */
+.kinnser-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #111;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s;
+}
+
+.kinnser-notification-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Scrollbar personalizada */
+.kinnser-autofill-content::-webkit-scrollbar,
+.kinnser-vitals-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.kinnser-autofill-content::-webkit-scrollbar-track,
+.kinnser-vitals-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.kinnser-autofill-content::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.kinnser-vitals-content::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.kinnser-autofill-content::-webkit-scrollbar-thumb:hover {
+  background: #111;
+}
+
+.kinnser-vitals-content::-webkit-scrollbar-thumb:hover {
+  background: #111;
+}
