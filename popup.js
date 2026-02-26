@@ -483,6 +483,49 @@ async function saveTemplate(name, fields) {
   renderFormTemplates();
 }
 
+// Generar plantilla aleatoria
+async function generateRandomTemplate() {
+  const getRandom = (min, max, decimals = 0) => {
+    if (decimals === 0) {
+      return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+    }
+    const val = Math.random() * (max - min) + min;
+    return val.toFixed(decimals);
+  };
+
+  const bp_prior_1 = parseInt(getRandom(100, 125));
+  const bp_prior_2 = parseInt(getRandom(60, 85));
+  const hr_prior = parseInt(getRandom(60, 85));
+  const resp_prior = parseInt(getRandom(14, 18));
+
+  // Post debe ser superior a Prior por un máximo de 7 puntos
+  const getPostValue = (prior) => {
+    const diff = parseInt(getRandom(1, 7));
+    return (prior + diff).toString();
+  };
+
+  const fields = {
+    temperature: getRandom(97.0, 98.3, 1),
+    bp_prior_1: bp_prior_1.toString(),
+    bp_prior_2: bp_prior_2.toString(),
+    heart_rate_prior: hr_prior.toString(),
+    respirations_prior: resp_prior.toString(),
+    bp_post_1: getPostValue(bp_prior_1),
+    bp_post_2: getPostValue(bp_prior_2),
+    heart_rate_post: getPostValue(hr_prior),
+    respirations_post: getPostValue(resp_prior)
+  };
+
+  // Asegurar que respirations_post no pase de 20
+  if (parseInt(fields.respirations_post) > 20) {
+    fields.respirations_post = "20";
+  }
+
+  const name = `Signos Aleatorios ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+  await saveTemplate(name, fields);
+}
+
 // Cerrar modales
 function closeModal() {
   document.getElementById('modal-edit').classList.remove('active');
@@ -529,6 +572,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Botón agregar plantilla
   document.getElementById('btn-add-template')?.addEventListener('click', openAddTemplateModal);
 
+  // Botón generar aleatoria
+  document.getElementById('btn-generate-random')?.addEventListener('click', generateRandomTemplate);
+
   // Formulario texto
   document.getElementById('form-text')?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -568,6 +614,33 @@ document.addEventListener('DOMContentLoaded', () => {
       respirations_prior: document.getElementById('template-resp-prior').value.trim(),
       respirations_post: document.getElementById('template-resp-post').value.trim()
     };
+
+    // Validar rangos de respiración (máximo 20)
+    if (parseInt(fields.respirations_prior) > 20 || parseInt(fields.respirations_post) > 20) {
+      alert('La respiración no puede ser mayor a 20.');
+      return;
+    }
+
+    // Validar que Post sea superior a Prior y no más de 7 puntos de diferencia
+    const validatePair = (prior, post, label) => {
+      const p1 = parseInt(prior);
+      const p2 = parseInt(post);
+      if (isNaN(p1) || isNaN(p2)) return true; // Ignorar si no están llenos
+      if (p2 <= p1) {
+        alert(`${label}: El valor POST debe ser mayor al PRIOR.`);
+        return false;
+      }
+      if (p2 - p1 > 7) {
+        alert(`${label}: La diferencia no puede ser mayor a 7 puntos.`);
+        return false;
+      }
+      return true;
+    };
+
+    if (!validatePair(fields.bp_prior_1, fields.bp_post_1, 'Presión Arterial Sistólica')) return;
+    if (!validatePair(fields.bp_prior_2, fields.bp_post_2, 'Presión Arterial Diastólica')) return;
+    if (!validatePair(fields.heart_rate_prior, fields.heart_rate_post, 'Frecuencia Cardíaca')) return;
+    if (!validatePair(fields.respirations_prior, fields.respirations_post, 'Respiraciones')) return;
 
     if (name) {
       saveTemplate(name, fields);

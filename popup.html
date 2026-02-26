@@ -468,7 +468,6 @@
   <div class="tabs">
     <button class="tab active" data-tab="manage">Textos</button>
     <button class="tab" data-tab="templates">Signos Vitales</button>
-    <button class="tab" data-tab="help">Ayuda</button>
   </div>
 
   <div class="content">
@@ -492,44 +491,21 @@
 
     <!-- Tab: Plantillas de Signos Vitales -->
     <div id="tab-templates" class="tab-content" style="display: none;">
-      <button class="btn-add" id="btn-add-template" style="margin-bottom: 20px;">
-        <span>+</span>
-        <span>Nueva Plantilla de Signos Vitales</span>
-      </button>
+      <div class="action-buttons">
+        <button class="btn-add" id="btn-add-template">
+          <span>+</span>
+          <span>Nueva Plantilla</span>
+        </button>
+        <button class="btn-add" id="btn-generate-random" style="background: #555;">
+          <span>🎲</span>
+          <span>Generar Aleatoria</span>
+        </button>
+      </div>
 
       <div id="templates-container"></div>
     </div>
 
-    <!-- Tab: Ayuda -->
-    <div id="tab-help" class="tab-content" style="display: none;">
-      <div class="help-section">
-        <div class="help-item">
-          <h3>Cómo usar la extensión</h3>
-          <p>1. Haz <strong>doble click</strong> en cualquier campo de texto en Kinnser<br>
-            2. Aparecerá un menú con tus textos guardados<br>
-            3. Selecciona el texto que deseas insertar</p>
-        </div>
 
-        <div class="help-item">
-          <h3>Signos Vitales (NUEVO)</h3>
-          <p>Crea plantillas con valores de signos vitales para autocompletar formularios completos con un solo click.
-            Ideal para pacientes estables con valores similares.</p>
-        </div>
-
-        <div class="help-item">
-          <h3>Gestionar categorías</h3>
-          <p>Crea categorías personalizadas para organizar tus textos. Cada categoría puede tener su propio color
-            distintivo.</p>
-        </div>
-
-        <div class="help-item">
-          <h3>Atajos de teclado</h3>
-          <p><strong>ESC</strong> - Cerrar el menú de autocompletado<br>
-            <strong>Doble click</strong> - Abrir menú en cualquier campo de texto
-          </p>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- Modal para agregar/editar texto -->

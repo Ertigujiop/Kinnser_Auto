@@ -138,13 +138,15 @@ function showVitalsButton() {
     await showVitalsTemplateMenu(vitalsBtn);
   });
 
-  // Botón 2: Función pendiente (letra P)
+  // Botón 2: Función Prior solamente (letra P)
   const pBtn = document.createElement('button');
   pBtn.id = 'kinnser-p-floating-btn';
   pBtn.className = 'kinnser-p-floating-btn';
-  pBtn.title = 'Función próximamente';
+  pBtn.title = 'Solo Temperatura y Prior';
   pBtn.textContent = 'P';
-  // La función del botón P se asignará más adelante
+  pBtn.addEventListener('click', async () => {
+    await showVitalsTemplateMenu(pBtn, true); // true indica que es solo Prior
+  });
 
   container.appendChild(pBtn);
   container.appendChild(vitalsBtn);
@@ -152,16 +154,18 @@ function showVitalsButton() {
 }
 
 // Mostrar menú de plantillas de signos vitales - POPUP ARRIBA
-async function showVitalsTemplateMenu(buttonElement) {
+async function showVitalsTemplateMenu(buttonElement, onlyPrior = false) {
   const templates = await loadFormTemplates();
 
-  let menu = document.getElementById('kinnser-vitals-menu');
+  const menuId = onlyPrior ? 'kinnser-p-menu' : 'kinnser-vitals-menu';
+  let menu = document.getElementById(menuId);
   if (!menu) {
-    menu = createVitalsMenu();
-    setupVitalsMenuEvents();
+    menu = createVitalsMenu(menuId, onlyPrior ? 'Solo Temperatura y Prior' : 'Autocompletar Signos Vitales');
+    setupVitalsMenuEvents(menuId, buttonElement.id);
   }
 
-  const content = document.getElementById('kinnser-vitals-content');
+  const contentId = menuId + '-content';
+  const content = document.getElementById(contentId);
   content.innerHTML = '';
 
   if (templates.length === 0) {
@@ -178,13 +182,15 @@ async function showVitalsTemplateMenu(buttonElement) {
       templateDiv.innerHTML = `
         <div class="kinnser-vitals-item-name">${template.name}</div>
         <div class="kinnser-vitals-item-preview">
-          Temp: ${template.fields.temperature || '-'} | 
-          BP: ${template.fields.bp_prior_1 || '-'}/${template.fields.bp_prior_2 || '-'} → ${template.fields.bp_post_1 || '-'}/${template.fields.bp_post_2 || '-'}
+          ${onlyPrior ?
+          `Temp: ${template.fields.temperature || '-'} | BP: ${template.fields.bp_prior_1 || '-'}/${template.fields.bp_prior_2 || '-'}` :
+          `Temp: ${template.fields.temperature || '-'} | BP: ${template.fields.bp_prior_1 || '-'}/${template.fields.bp_prior_2 || '-'} → ${template.fields.bp_post_1 || '-'}/${template.fields.bp_post_2 || '-'}`
+        }
         </div>
       `;
       templateDiv.addEventListener('click', () => {
-        fillVitalsForm(template.fields);
-        hideVitalsMenu();
+        fillVitalsForm(template.fields, onlyPrior);
+        hideVitalsMenu(menuId);
       });
       content.appendChild(templateDiv);
     });
@@ -196,6 +202,26 @@ async function showVitalsTemplateMenu(buttonElement) {
   menu.style.top = `${rect.top + window.scrollY - menuHeight - 10}px`;
   menu.style.left = `${rect.left + window.scrollX - 200}px`;
   menu.style.display = 'block';
+}
+
+// Crear menú de plantillas genérico
+function createVitalsMenu(id, title) {
+  const menu = document.createElement('div');
+  menu.id = id;
+  menu.className = 'kinnser-vitals-dropdown';
+  menu.innerHTML = `
+    <div class="kinnser-vitals-header">
+      <span class="kinnser-vitals-title">${title}</span>
+      <button id="${id}-close" class="kinnser-close-btn">×</button>
+    </div>
+    <div class="kinnser-vitals-content" id="${id}-content"></div>
+  `;
+  document.body.appendChild(menu);
+
+  // Evento cerrar específico
+  document.getElementById(`${id}-close`).addEventListener('click', () => hideVitalsMenu(id));
+
+  return menu;
 }
 
 // Función para llenar campo con múltiples intentos de eventos
@@ -221,6 +247,23 @@ function fillField(input, value) {
     input.value = value;
   }
 
+  return true;
+}
+
+// Función para seleccionar opción en un select por índice
+function selectOptionByIndex(select, index) {
+  if (!select || select.options.length <= index) return false;
+
+  select.selectedIndex = index;
+
+  const events = [
+    new Event('focus', { bubbles: true }),
+    new Event('change', { bubbles: true }),
+    new Event('input', { bubbles: true }),
+    new Event('blur', { bubbles: true })
+  ];
+
+  events.forEach(event => select.dispatchEvent(event));
   return true;
 }
 
@@ -258,9 +301,9 @@ function findInputsInRow(rowLabel) {
   return [];
 }
 
-// Autocompletar formulario de signos vitales - SOLO PRIOR Y POST
-function fillVitalsForm(fields) {
-  console.log('=== Iniciando autocompletado (SOLO Prior y Post) ===');
+// Autocompletar formulario de signos vitales - FILTRO POR BOTÓN
+function fillVitalsForm(fields, onlyPrior = false) {
+  console.log(`=== Iniciando autocompletado (${onlyPrior ? 'SOLO Prior' : 'Prior y Post'}) ===`);
   console.log('Valores a llenar:', fields);
   let filledCount = 0;
 
@@ -274,6 +317,7 @@ function fillVitalsForm(fields) {
     if (tempLabels.length > 0) {
       const tempSection = tempLabels[0].closest('tr, div, table') || tempLabels[0].parentElement;
       if (tempSection) {
+        // Llenar valor de temperatura
         const tempInputs = Array.from(tempSection.querySelectorAll('input')).filter(input => {
           return (input.type === 'text' || !input.type) &&
             input.offsetWidth > 0 &&
@@ -283,6 +327,15 @@ function fillVitalsForm(fields) {
         if (tempInputs.length > 0 && fillField(tempInputs[0], fields.temperature)) {
           console.log('✓ Temperatura llenada:', fields.temperature);
           filledCount++;
+        }
+
+        // Llenar select "taken" (Temporal - 5ta opción = índice 4)
+        const tempSelects = Array.from(tempSection.querySelectorAll('select'));
+        if (tempSelects.length > 0) {
+          if (selectOptionByIndex(tempSelects[0], 4)) {
+            console.log('✓ Select "taken" completado (Temporal)');
+            filledCount++;
+          }
         }
       }
     }
@@ -297,6 +350,13 @@ function fillVitalsForm(fields) {
         !input.hasAttribute('hidden') &&
         input.offsetWidth > 0 &&
         input.offsetHeight > 0;
+    });
+  }
+
+  // Helper: obtener selects visibles de un elemento fila
+  function getRowSelects(rowEl) {
+    return Array.from(rowEl.querySelectorAll('select')).filter(select => {
+      return select.offsetWidth > 0 && select.offsetHeight > 0;
     });
   }
 
@@ -336,6 +396,30 @@ function fillVitalsForm(fields) {
       console.log('✓ Respirations Prior llenado:', fields.respirations_prior);
       filledCount++;
     }
+  }
+
+  // Llenar dropdowns en fila Prior (Sitting y Left)
+  const priorSelects = priorRowEl ? getRowSelects(priorRowEl) : [];
+  if (priorSelects.length >= 2) {
+    // Si la fila empieza con un select de etiqueta (Prior/Post), desfasamos los índices
+    const offset = priorSelects[0].textContent.includes('Prior') || priorSelects[0].textContent.includes('Post') ? 1 : 0;
+
+    if (priorSelects.length >= offset + 2) {
+      if (selectOptionByIndex(priorSelects[offset], 2)) { // Position: 3ra opción = índice 2 (Sitting)
+        console.log('✓ Position Prior completado (Sitting)');
+        filledCount++;
+      }
+      if (selectOptionByIndex(priorSelects[offset + 1], 1)) { // Side: 2da opción = índice 1 (Left)
+        console.log('✓ Side Prior completado (Left)');
+        filledCount++;
+      }
+    }
+  }
+
+  if (onlyPrior) {
+    console.log('\n=== Autocompletado Prior finalizado (modo selectivo) ===');
+    showNotification(`✓ ${filledCount} campos completados (Solo Prior)`);
+    return;
   }
 
   // 3. POST - Navegar desde la fila Prior: 2 filas hacia abajo (Prior → During → Post)
@@ -380,6 +464,32 @@ function fillVitalsForm(fields) {
     if (fields.respirations_post && fillField(postInputs[3], fields.respirations_post)) {
       console.log('✓ Respirations Post llenado:', fields.respirations_post);
       filledCount++;
+    }
+  }
+
+  // Llenar dropdowns en fila Post (Sitting y Left)
+  // Re-obtener el elemento de fila para Post de forma segura
+  let postRowElFinal = null;
+  if (priorRowEl) {
+    const siblingRows = Array.from(priorRowEl.parentElement.children).filter(el => el.tagName === 'TR');
+    const priorIdx = siblingRows.indexOf(priorRowEl);
+    if (priorIdx !== -1 && priorIdx + 2 < siblingRows.length) {
+      postRowElFinal = siblingRows[priorIdx + 2];
+    }
+  }
+
+  const postSelects = postRowElFinal ? getRowSelects(postRowElFinal) : [];
+  if (postSelects.length >= 2) {
+    const offset = postSelects[0].textContent.includes('Prior') || postSelects[0].textContent.includes('Post') ? 1 : 0;
+    if (postSelects.length >= offset + 2) {
+      if (selectOptionByIndex(postSelects[offset], 2)) { // Position: Sitting
+        console.log('✓ Position Post completado (Sitting)');
+        filledCount++;
+      }
+      if (selectOptionByIndex(postSelects[offset + 1], 1)) { // Side: Left
+        console.log('✓ Side Post completado (Left)');
+        filledCount++;
+      }
     }
   }
 
@@ -488,16 +598,14 @@ function setupMenuEvents() {
 }
 
 // Configurar eventos del menú de signos vitales
-function setupVitalsMenuEvents() {
-  document.getElementById('kinnser-vitals-close').addEventListener('click', hideVitalsMenu);
-
+function setupVitalsMenuEvents(menuId, buttonId) {
   document.addEventListener('click', (e) => {
-    const menu = document.getElementById('kinnser-vitals-menu');
-    const button = document.getElementById('kinnser-vitals-floating-btn');
+    const menu = document.getElementById(menuId);
+    const button = document.getElementById(buttonId);
     if (menu &&
       !menu.contains(e.target) &&
       e.target !== button) {
-      hideVitalsMenu();
+      hideVitalsMenu(menuId);
     }
   });
 }
@@ -528,8 +636,8 @@ function hideMenu() {
 }
 
 // Ocultar menú de signos vitales
-function hideVitalsMenu() {
-  const menu = document.getElementById('kinnser-vitals-menu');
+function hideVitalsMenu(id) {
+  const menu = id ? document.getElementById(id) : document.querySelector('.kinnser-vitals-dropdown[style*="display: block"]');
   if (menu) {
     menu.style.display = 'none';
   }
